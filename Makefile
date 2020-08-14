@@ -1,4 +1,4 @@
-.PHONY: clean check test build release-test
+.PHONY: clean lint test build release-test
 
 export GO111MODULE=on
 
@@ -9,7 +9,7 @@ BUILD_DATE := $(shell date -u '+%Y-%m-%d_%I:%M:%S%p')
 
 BIN_OUTPUT := $(if $(filter $(shell go env GOOS), windows), semgo.exe, semgo)
 
-default: clean check test build
+default: clean lint test build
 
 test: clean
 	go test -v -cover ./...
@@ -21,7 +21,7 @@ build: clean
 	@echo Version: $(VERSION) $(BUILD_DATE)
 	CGO_ENABLED=0 go build -v -trimpath -ldflags '-s -w -X "main.version=${VERSION}" -X "main.commit=${SHA}" -X "main.date=${BUILD_DATE}"' -o ${BIN_OUTPUT} .
 
-check:
+lint:
 	golangci-lint run
 
 release-test:
