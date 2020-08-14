@@ -3,6 +3,8 @@
 [![GitHub release](https://img.shields.io/github/release/ldez/semgo.svg)](https://github.com/ldez/semgo/releases/latest)
 [![Build Status](https://travis-ci.com/ldez/semgo.svg?branch=master)](https://travis-ci.com/ldez/semgo)
 
+[![Sponsor me](https://img.shields.io/badge/Sponsor%20me-%E2%9D%A4%EF%B8%8F-pink.svg)](https://github.com/sponsors/ldez)
+
 ## Description
 
 Because of the release cycle of machine image, in Semaphore, there is no guarantee that you are using the latest version of Go.
