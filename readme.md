@@ -44,3 +44,17 @@ go version go1.15 linux/amd64
 
 [18:30 14/08/2020]: Switch successful.
 ```
+
+## Installation
+
+```bash
+curl -sSfL https://raw.githubusercontent.com/ldez/semgo/master/godownloader.sh | sudo sh -s -- -b "/usr/local/bin"
+```
+
+```bash
+curl -sSfL https://raw.githubusercontent.com/ldez/semgo/master/godownloader.sh | sudo sh -s -- -b "/usr/local/bin" v0.1.0
+```
+
+```bash
+curl -sSfL https://raw.githubusercontent.com/ldez/semgo/master/godownloader.sh | sudo sh -s -- -b "/usr/local/bin" ${SEMGO_VERSION}
+```
