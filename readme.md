@@ -1,5 +1,8 @@
 # Semgo
 
+[![GitHub release](https://img.shields.io/github/release/ldez/semgo.svg)](https://github.com/ldez/semgo/releases/latest)
+[![Build Status](https://travis-ci.com/ldez/semgo.svg?branch=master)](https://travis-ci.com/ldez/semgo)
+
 ## Description
 
 Because of the release cycle of machine image, in Semaphore, there is no guarantee that you are using the latest version of Go.
