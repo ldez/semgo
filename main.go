@@ -36,9 +36,7 @@ func main() {
 		usage()
 	}
 
-	expr := regexp.MustCompile(`go(\d\.\d+)(?:.\d+)?`)
-
-	if ok := expr.MatchString(cfg.version); !ok {
+	if ok, _ := regexp.MatchString(`go(\d\.\d+)(?:.\d+)?`, cfg.version); !ok {
 		log.Fatalf("invalid version (expected gox.x+[.x+]): %s", cfg.version)
 	}
 

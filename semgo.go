@@ -28,20 +28,20 @@ type sem struct {
 	debug  bool
 }
 
-func (s *sem) getGo(root string, v string) error {
-	info, err := s.getReleaseInfo(v)
+func (s *sem) getGo(root string, targetedVersion string) error {
+	info, err := s.getReleaseInfo(targetedVersion)
 	if err != nil {
 		return err
 	}
 
 	dest := filepath.Join(root, strings.TrimPrefix(info.Version, "go"))
 
-	localVersions, err := s.getLocalVersions(root + "/*")
+	locals, err := s.getLocalVersions(root + "/*")
 	if err != nil {
 		return err
 	}
 
-	local, err := s.findNearestLocalVersion(info, localVersions)
+	local, err := s.findNearestLocalVersion(info, locals)
 	if err != nil {
 		return err
 	}
