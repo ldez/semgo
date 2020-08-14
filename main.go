@@ -19,7 +19,7 @@ func main() {
 
 	flag.StringVar(&cfg.dest, "dest", "/usr/local/golang/", "Path to the Go versions storage in SemaphoreCI.")
 
-	debug := flag.Bool("debug", true, "Debug mode.")
+	debug := flag.Bool("debug", false, "Debug mode.")
 	help := flag.Bool("h", false, "Show this help.")
 
 	flag.Usage = usage
@@ -43,7 +43,7 @@ func main() {
 	}
 
 	smg := sem{
-		client: &http.Client{Timeout: 2 * time.Second},
+		client: &http.Client{Timeout: 30 * time.Second},
 		debug:  *debug,
 	}
 
