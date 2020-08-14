@@ -17,7 +17,7 @@ type config struct {
 func main() {
 	cfg := config{}
 
-	flag.StringVar(&cfg.dest, "dest", "./semgo-example/usr/local/golang/", "")
+	flag.StringVar(&cfg.dest, "dest", "/usr/local/golang/", "Path to the Go versions storage in SemaphoreCI.")
 
 	debug := flag.Bool("debug", true, "Debug mode.")
 	help := flag.Bool("h", false, "Show this help.")
