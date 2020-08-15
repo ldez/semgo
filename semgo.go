@@ -10,13 +10,14 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
-	"strconv"
 	"strings"
 
 	"github.com/ldez/grignotin/version"
 )
 
 const baseDownloadURL = "https://dl.google.com/go/"
+
+const envGoRoot = "GOROOT"
 
 type localInfo struct {
 	Version string
@@ -36,23 +37,39 @@ func (s *sem) getGo(root string, targetedVersion string) error {
 
 	dest := filepath.Join(root, strings.TrimPrefix(info.Version, "go"))
 
-	locals, err := s.getLocalVersions(root + "/*")
+	current, err := s.extractVersionFromGoRoot()
 	if err != nil {
 		return err
 	}
 
-	local, err := s.findNearestLocalVersion(info, locals)
-	if err != nil {
-		return err
-	}
-
-	if local == nil {
+	if info.Version == "go"+current.Version {
+		fmt.Printf("Nothing to do: %s already installed.\n", info.Version)
 		return nil
 	}
 
-	err = createSymlink(dest, local)
+	locals, err := s.getLocalVersions(filepath.Join(root, "*"))
 	if err != nil {
 		return err
+	}
+
+	// removes current local version
+	current, err = removeCurrent(locals, current)
+	if err != nil {
+		return err
+	}
+
+	err = createSymlink(dest, current)
+	if err != nil {
+		return err
+	}
+
+	for _, local := range locals {
+		// the version already exits locally
+		if info.Version == "go"+local.Version {
+			fmt.Printf("[local] go%s has been replaced by %s.\n", current.Version, info.Version)
+
+			return nil
+		}
 	}
 
 	resp, err := s.client.Get(baseDownloadURL + info.Filename)
@@ -67,7 +84,7 @@ func (s *sem) getGo(root string, targetedVersion string) error {
 		return err
 	}
 
-	fmt.Printf("%s has been replaced by %s.\n", local.Version, info.Version)
+	fmt.Printf("[remote] go%s has been replaced by %s.\n", current.Version, info.Version)
 
 	return nil
 }
@@ -104,6 +121,24 @@ func (s *sem) findReleaseInfo(releases []version.Release, v string) *version.Fil
 	return nil
 }
 
+func (s *sem) extractVersionFromGoRoot() (*localInfo, error) {
+	expr := regexp.MustCompile(`\d\.\d+(?:\.\d+)?`)
+
+	goRoot := os.Getenv(envGoRoot)
+
+	if s.debug {
+		log.Printf("%s=%s", envGoRoot, goRoot)
+	}
+
+	subMatch := expr.FindStringSubmatch(goRoot)
+
+	if len(subMatch) != 1 {
+		return nil, fmt.Errorf("unable to extract version from GOROOT: %s", goRoot)
+	}
+
+	return &localInfo{Version: subMatch[0], Path: goRoot}, nil
+}
+
 func (s *sem) getLocalVersions(dir string) (map[string]localInfo, error) {
 	glob, err := filepath.Glob(dir)
 	if err != nil {
@@ -124,44 +159,6 @@ func (s *sem) getLocalVersions(dir string) (map[string]localInfo, error) {
 	}
 
 	return result, nil
-}
-
-func (s *sem) findNearestLocalVersion(info *version.File, locals map[string]localInfo) (*localInfo, error) {
-	subMatch := regexp.MustCompile(`(go\d\.\d+)(?:.\d+)?`).FindStringSubmatch(info.Version)
-	if len(subMatch) != 2 {
-		return nil, fmt.Errorf("invalid version: %s", info.Version)
-	}
-
-	truncVersion := subMatch[1]
-
-	// if a version (goX.YZ) already exist
-	if local, ok := locals[truncVersion]; ok {
-		if info.Version == "go"+local.Version {
-			return nil, nil
-		}
-
-		return &local, nil
-	}
-
-	parts := strings.Split(truncVersion, ".")
-
-	minor, err := strconv.Atoi(parts[1])
-	if err != nil {
-		return nil, err
-	}
-
-	for i := minor; i > 0; i-- {
-		local, ok := locals[fmt.Sprintf("%s.%d", parts[0], i)]
-		if ok {
-			if s.debug {
-				log.Printf("find nearest local version: %+v", local)
-			}
-
-			return &local, nil
-		}
-	}
-
-	return nil, fmt.Errorf("unable to find the nearest version of %s", info.Version)
 }
 
 func (s *sem) extract(dest string, stream io.Reader) error {
@@ -229,6 +226,24 @@ func (s *sem) extract(dest string, stream io.Reader) error {
 	}
 
 	return nil
+}
+
+// removeCurrent removes current local version.
+func removeCurrent(locals map[string]localInfo, current *localInfo) (*localInfo, error) {
+	for _, local := range locals {
+		local := local
+
+		if local.Version == current.Version {
+			err := os.RemoveAll(local.Path)
+			if err != nil {
+				return nil, err
+			}
+
+			return &local, nil
+		}
+	}
+
+	return nil, fmt.Errorf("unable to find %s", current.Path)
 }
 
 func createSymlink(dest string, local *localInfo) error {
