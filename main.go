@@ -12,6 +12,8 @@ import (
 	"golang.org/x/mod/modfile"
 )
 
+const modPath = "./go.mod"
+
 type config struct {
 	dest       string
 	version    string
@@ -35,29 +37,37 @@ func main() {
 	}
 
 	nArgs := flag.NArg()
-	if nArgs != 1 && !cfg.useModFile || cfg.useModFile && nArgs > 0 {
+	if nArgs != 1 && !cfg.useModFile || cfg.useModFile && nArgs > 1 {
 		log.Println("Error: missing go version.")
 		usage()
 	}
 
-	if cfg.useModFile {
-		file, err := ioutil.ReadFile("./go.mod")
-		if err != nil {
-			log.Fatal(err)
-		}
+	cfg.version = flag.Arg(0)
 
-		parse, err := modfile.Parse("./go.mod", file, nil)
-		if err != nil {
-			log.Fatal(err)
+	if cfg.version != "" {
+		ok, _ := regexp.MatchString(`go(\d\.\d+)(?:.\d+)?`, cfg.version)
+		if !ok {
+			log.Fatalf("invalid version (expected gox.x+[.x+]): %s", cfg.version)
 		}
-
-		cfg.version = "go" + parse.Go.Version
-	} else {
-		cfg.version = flag.Arg(0)
 	}
 
-	if ok, _ := regexp.MatchString(`go(\d\.\d+)(?:.\d+)?`, cfg.version); !ok {
-		log.Fatalf("invalid version (expected gox.x+[.x+]): %s", cfg.version)
+	if cfg.useModFile {
+		mod, err := readGoMod()
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		if mod != nil {
+			cfg.version = "go" + mod.Go.Version
+		}
+	}
+
+	if cfg.version == "" {
+		log.Fatal("The version is missing.")
+	}
+
+	if *debug {
+		log.Printf("Debug mode: %#v", cfg)
 	}
 
 	smg := sem{
@@ -69,6 +79,20 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+}
+
+func readGoMod() (*modfile.File, error) {
+	_, err := os.Stat(modPath)
+	if err != nil {
+		return nil, nil
+	}
+
+	file, err := ioutil.ReadFile(modPath)
+	if err != nil {
+		return nil, err
+	}
+
+	return modfile.Parse(modPath, file, nil)
 }
 
 func usage() {
