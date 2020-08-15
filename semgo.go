@@ -17,8 +17,6 @@ import (
 
 const baseDownloadURL = "https://dl.google.com/go/"
 
-const envGoRoot = "GOROOT"
-
 type localInfo struct {
 	Version string
 	Path    string
@@ -27,6 +25,7 @@ type localInfo struct {
 type sem struct {
 	client *http.Client
 	debug  bool
+	goRoot string
 }
 
 func (s *sem) getGo(root string, targetedVersion string) error {
@@ -47,7 +46,7 @@ func (s *sem) getGo(root string, targetedVersion string) error {
 		return nil
 	}
 
-	locals, err := s.getLocalVersions(filepath.Join(root, "*"))
+	locals, err := s.getLocalVersions(root)
 	if err != nil {
 		return err
 	}
@@ -100,16 +99,14 @@ func (s *sem) getReleaseInfo(v string) (*version.File, error) {
 		return nil, fmt.Errorf("unsupported version: %s", v)
 	}
 
-	if s.debug {
-		log.Printf("find release: %+v", info)
-	}
+	s.logDebugf("find release: %+v", info)
 
 	return info, nil
 }
 
 func (s *sem) findReleaseInfo(releases []version.Release, v string) *version.File {
 	for _, release := range releases {
-		if strings.HasPrefix(release.Version, v) {
+		if v != "" && strings.HasPrefix(release.Version, v) {
 			for _, file := range release.Files {
 				if file.OS == "linux" && file.Arch == "amd64" {
 					return &file
@@ -124,38 +121,38 @@ func (s *sem) findReleaseInfo(releases []version.Release, v string) *version.Fil
 func (s *sem) extractVersionFromGoRoot() (*localInfo, error) {
 	expr := regexp.MustCompile(`\d\.\d+(?:\.\d+)?`)
 
-	goRoot := os.Getenv(envGoRoot)
+	goRoot := os.Getenv(s.goRoot)
 
-	if s.debug {
-		log.Printf("%s=%s", envGoRoot, goRoot)
-	}
+	s.logDebugf("%s=%s", s.goRoot, goRoot)
 
 	subMatch := expr.FindStringSubmatch(goRoot)
 
 	if len(subMatch) != 1 {
-		return nil, fmt.Errorf("unable to extract version from GOROOT: %s", goRoot)
+		return nil, fmt.Errorf("unable to extract version from %s: %s", s.goRoot, goRoot)
 	}
 
 	return &localInfo{Version: subMatch[0], Path: goRoot}, nil
 }
 
 func (s *sem) getLocalVersions(dir string) (map[string]localInfo, error) {
-	glob, err := filepath.Glob(dir)
+	glob, err := filepath.Glob(filepath.Join(dir, "*"))
 	if err != nil {
+		s.logDebugf("glob error: %v", err)
 		return nil, err
 	}
 
 	result := map[string]localInfo{}
 
-	for _, s := range glob {
-		vPath := filepath.Base(s)
+	for _, folder := range glob {
+		vPath := filepath.Base(folder)
 		subMatch := regexp.MustCompile(`(\d\.\d+)(?:.\d+)?`).FindStringSubmatch(vPath)
 
 		if len(subMatch) != 2 {
+			s.logDebugf("subMatch: %v %s %s", subMatch, folder, vPath)
 			continue
 		}
 
-		result["go"+subMatch[1]] = localInfo{Version: vPath, Path: s}
+		result["go"+subMatch[1]] = localInfo{Version: vPath, Path: folder}
 	}
 
 	return result, nil
@@ -167,9 +164,7 @@ func (s *sem) extract(dest string, stream io.Reader) error {
 		return err
 	}
 
-	if s.debug {
-		log.Printf("Extracting the Go archive to %s", dest)
-	}
+	s.logDebugf("Extracting the Go archive to %s", dest)
 
 	uncompressed, err := gzip.NewReader(stream)
 	if err != nil {
@@ -226,6 +221,14 @@ func (s *sem) extract(dest string, stream io.Reader) error {
 	}
 
 	return nil
+}
+
+func (s *sem) logDebugf(format string, v ...interface{}) {
+	if !s.debug {
+		return
+	}
+
+	log.Printf(format, v...)
 }
 
 // removeCurrent removes current local version.

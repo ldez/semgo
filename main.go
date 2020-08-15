@@ -12,6 +12,8 @@ import (
 	"golang.org/x/mod/modfile"
 )
 
+const envGoRoot = "GOROOT"
+
 const modPath = "./go.mod"
 
 type config struct {
@@ -73,6 +75,7 @@ func main() {
 	smg := sem{
 		client: &http.Client{Timeout: 30 * time.Second},
 		debug:  *debug,
+		goRoot: envGoRoot,
 	}
 
 	err := smg.getGo(cfg.dest, cfg.version)
