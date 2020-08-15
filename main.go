@@ -2,22 +2,27 @@ package main
 
 import (
 	"flag"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
 	"regexp"
 	"time"
+
+	"golang.org/x/mod/modfile"
 )
 
 type config struct {
-	dest    string
-	version string
+	dest       string
+	version    string
+	useModFile bool
 }
 
 func main() {
 	cfg := config{}
 
-	flag.StringVar(&cfg.dest, "dest", "/usr/local/golang/", "Path to the Go versions storage in SemaphoreCI.")
+	flag.StringVar(&cfg.dest, "dest", "./semgo-example/usr/local/golang/", "Path to the Go versions storage in SemaphoreCI.")
+	flag.BoolVar(&cfg.useModFile, "mod", false, "")
 
 	debug := flag.Bool("debug", false, "Debug mode.")
 	help := flag.Bool("h", false, "Show this help.")
@@ -25,15 +30,30 @@ func main() {
 	flag.Usage = usage
 	flag.Parse()
 
-	nArgs := flag.NArg()
-	if nArgs != 1 {
+	if *help {
 		usage()
 	}
 
-	cfg.version = flag.Arg(0)
-
-	if *help {
+	nArgs := flag.NArg()
+	if nArgs != 1 && !cfg.useModFile || cfg.useModFile && nArgs > 0 {
+		log.Println("Error: missing go version.")
 		usage()
+	}
+
+	if cfg.useModFile {
+		file, err := ioutil.ReadFile("./go.mod")
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		parse, err := modfile.Parse("./go.mod", file, nil)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		cfg.version = "go" + parse.Go.Version
+	} else {
+		cfg.version = flag.Arg(0)
 	}
 
 	if ok, _ := regexp.MatchString(`go(\d\.\d+)(?:.\d+)?`, cfg.version); !ok {

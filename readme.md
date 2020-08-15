@@ -35,7 +35,13 @@ $ sudo semgo go1.14
 ```console
 $ sudo semgo go1.15
 [remote] go1.10.8 has been replaced by go1.15.
+```
 
+- Semaphore have only the `go1.14.6` and you want the Go version from your `go.mod` (`go1.15`):
+
+```console
+$ sudo semgo -mod
+[remote] go1.10.8 has been replaced by go1.15.
 ```
 
 ## Installation
