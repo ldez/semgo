@@ -18,31 +18,24 @@ This tool is used to replace the version used by the command `sem-version`.
 - Semaphore have only the `go1.14.6` and you want the latest `go1.14` (`go1.14.7`):
 
 ```console
-$ sudo semgo go1.14
-1.14.6 has been replaced by go1.14.7.
-
 $ sem-version go 1.14
 
 [18:29 14/08/2020]: Changing 'go' to version 1.14
 Currently active Go version is:
-go version go1.14.7 linux/amd64
+go version go1.14.6 linux/amd64
 
 [18:29 14/08/2020]: Switch successful.
+
+$ sudo semgo go1.14
+[remote] go1.14.6 has been replaced by go1.14.7.
 ```
 
 - Semaphore have only the `go1.14.6` and you want the latest `go1.15` (`go1.15`):
 
 ```console
 $ sudo semgo go1.15
-1.14.6 has been replaced by go1.15.
+[remote] go1.10.8 has been replaced by go1.15.
 
-$ sem-version go 1.14
-
-[18:30 14/08/2020]: Changing 'go' to version 1.14
-Currently active Go version is:
-go version go1.15 linux/amd64
-
-[18:30 14/08/2020]: Switch successful.
 ```
 
 ## Installation
