@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/ldez/grignotin/version"
@@ -23,18 +24,18 @@ func Test_getLocalVersions(t *testing.T) {
 	}{
 		{
 			desc:     "no version",
-			dir:      "./fixtures/usr/local/",
+			dir:      filepath.FromSlash("./fixtures/usr/local/"),
 			expected: map[string]localInfo{},
 		},
 		{
 			desc: "with versions",
 			dir:  "./fixtures/usr/local/golang/",
 			expected: map[string]localInfo{
-				"go1.10": {Version: "1.10.8", Path: "fixtures/usr/local/golang/1.10.8"},
-				"go1.11": {Version: "1.11.13", Path: "fixtures/usr/local/golang/1.11.13"},
-				"go1.12": {Version: "1.12.17", Path: "fixtures/usr/local/golang/1.12.17"},
-				"go1.13": {Version: "1.13.14", Path: "fixtures/usr/local/golang/1.13.14"},
-				"go1.14": {Version: "1.14.6", Path: "fixtures/usr/local/golang/1.14.6"},
+				"go1.10": {Version: "1.10.8", Path: filepath.FromSlash("fixtures/usr/local/golang/1.10.8")},
+				"go1.11": {Version: "1.11.13", Path: filepath.FromSlash("fixtures/usr/local/golang/1.11.13")},
+				"go1.12": {Version: "1.12.17", Path: filepath.FromSlash("fixtures/usr/local/golang/1.12.17")},
+				"go1.13": {Version: "1.13.14", Path: filepath.FromSlash("fixtures/usr/local/golang/1.13.14")},
+				"go1.14": {Version: "1.14.6", Path: filepath.FromSlash("fixtures/usr/local/golang/1.14.6")},
 			},
 		},
 	}
@@ -65,13 +66,13 @@ func Test_extractVersionFromGoRoot(t *testing.T) {
 	}{
 		{
 			desc:     "M.m.p",
-			val:      "/usr/local/golang/1.10.8/go",
-			expected: &localInfo{Version: "1.10.8", Path: "/usr/local/golang/1.10.8/go"},
+			val:      filepath.FromSlash("/usr/local/golang/1.10.8/go"),
+			expected: &localInfo{Version: "1.10.8", Path: filepath.FromSlash("/usr/local/golang/1.10.8/go")},
 		},
 		{
 			desc:     "M.m",
-			val:      "/usr/local/golang/1.15/go",
-			expected: &localInfo{Version: "1.15", Path: "/usr/local/golang/1.15/go"},
+			val:      filepath.FromSlash("/usr/local/golang/1.15/go"),
+			expected: &localInfo{Version: "1.15", Path: filepath.FromSlash("/usr/local/golang/1.15/go")},
 		},
 	}
 
@@ -94,7 +95,7 @@ func Test_findReleaseInfo(t *testing.T) {
 		debug: true,
 	}
 
-	file, err := ioutil.ReadFile("./fixtures/releases.json")
+	file, err := ioutil.ReadFile(filepath.FromSlash("./fixtures/releases.json"))
 	require.NoError(t, err)
 
 	var releases []version.Release
