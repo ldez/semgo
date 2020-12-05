@@ -1,7 +1,7 @@
 # Semgo
 
 [![GitHub release](https://img.shields.io/github/release/ldez/semgo.svg)](https://github.com/ldez/semgo/releases/latest)
-[![Build Status](https://travis-ci.com/ldez/semgo.svg?branch=master)](https://travis-ci.com/ldez/semgo)
+[![Build Status](https://github.com/ldez/semgo/workflows/Main/badge.svg?branch=master)](https://github.com/ldez/semgo/actions)
 
 [![Sponsor me](https://img.shields.io/badge/Sponsor%20me-%E2%9D%A4%EF%B8%8F-pink.svg)](https://github.com/sponsors/ldez)
 
