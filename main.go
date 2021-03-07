@@ -2,7 +2,6 @@ package main
 
 import (
 	"flag"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -94,7 +93,7 @@ func readGoMod() (*modfile.File, error) {
 		return nil, err
 	}
 
-	file, err := ioutil.ReadFile(modPath)
+	file, err := os.ReadFile(modPath)
 	if err != nil {
 		return nil, err
 	}

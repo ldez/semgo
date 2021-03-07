@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
@@ -95,7 +94,7 @@ func Test_findReleaseInfo(t *testing.T) {
 		debug: true,
 	}
 
-	file, err := ioutil.ReadFile(filepath.FromSlash("./fixtures/releases.json"))
+	file, err := os.ReadFile(filepath.FromSlash("./fixtures/releases.json"))
 	require.NoError(t, err)
 
 	var releases []version.Release
