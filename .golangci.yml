@@ -44,7 +44,6 @@ linters-settings:
   forbidigo:
     forbid:
       - '^print(ln)?$'
-      - '^fmt\.Print(f|ln)?$'
       - '^panic$'
       - '^spew\.Print(f|ln)?$'
       - '^spew\.Dump$'
@@ -52,8 +51,11 @@ linters-settings:
 linters:
   enable-all: true
   disable:
-    - maligned # deprecated
+    - scopelint # deprecated
     - interfacer # deprecated
+    - maligned # deprecated
+    - sqlclosecheck # not relevant (SQL)
+    - rowserrcheck # not relevant (SQL)
     - cyclop # duplicate of gocyclo
     - lll
     - gas
@@ -72,7 +74,6 @@ linters:
     - exhaustivestruct
     - noctx
     - makezero
-    - forbidigo
 
 issues:
   exclude-use-default: false
