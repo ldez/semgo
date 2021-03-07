@@ -87,7 +87,11 @@ func main() {
 func readGoMod() (*modfile.File, error) {
 	_, err := os.Stat(modPath)
 	if err != nil {
-		return nil, nil
+		if os.IsNotExist(err) {
+			return nil, nil
+		}
+
+		return nil, err
 	}
 
 	file, err := ioutil.ReadFile(modPath)

@@ -25,11 +25,11 @@ type localInfo struct {
 
 type sem struct {
 	client *http.Client
-	debug  bool
 	goRoot string
+	debug  bool
 }
 
-func (s *sem) getGo(root string, targetedVersion string) error {
+func (s *sem) getGo(root, targetedVersion string) error {
 	info, err := s.getReleaseInfo(targetedVersion)
 	if err != nil {
 		return err
