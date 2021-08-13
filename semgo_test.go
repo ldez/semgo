@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
 	"testing"
@@ -165,4 +166,17 @@ func Test_findReleaseInfo(t *testing.T) {
 			assert.Equal(t, test.expected, info)
 		})
 	}
+}
+
+func Test_getReleaseInfo(t *testing.T) {
+	t.Skip("only for debug")
+
+	smg := sem{
+		debug: true,
+	}
+
+	info, err := smg.getReleaseInfo("go1.17")
+	require.NoError(t, err)
+
+	fmt.Println(info)
 }

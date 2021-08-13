@@ -11,6 +11,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"sort"
 	"strings"
 
 	"github.com/ldez/grignotin/version"
@@ -90,14 +91,17 @@ func (s *sem) getGo(root, targetedVersion string) error {
 }
 
 func (s *sem) getReleaseInfo(v string) (*version.File, error) {
-	releases, err := version.GetReleases(false)
+	stableReleases, err := version.GetReleases(false)
 	if err != nil {
 		return nil, err
 	}
 
-	info := s.findReleaseInfo(releases, v)
+	info := s.findReleaseInfo(stableReleases, v)
 	if info == nil {
-		return nil, fmt.Errorf("unsupported version: %s", v)
+		info, err = findLatestUnstable(v)
+		if err != nil {
+			return nil, fmt.Errorf("unsupported version: %w", err)
+		}
 	}
 
 	s.logDebugf("find release: %+v", info)
@@ -108,10 +112,9 @@ func (s *sem) getReleaseInfo(v string) (*version.File, error) {
 func (s *sem) findReleaseInfo(releases []version.Release, v string) *version.File {
 	for _, release := range releases {
 		if v != "" && strings.HasPrefix(release.Version, v) {
-			for _, file := range release.Files {
-				if file.OS == "linux" && file.Arch == "amd64" {
-					return &file
-				}
+			f := findFile(release)
+			if f != nil {
+				return f
 			}
 		}
 	}
@@ -267,4 +270,48 @@ func createSymlink(dest string, local *localInfo) error {
 	}
 
 	return os.Symlink(abs, local.Path)
+}
+
+func findLatestUnstable(v string) (*version.File, error) {
+	releases, err := version.GetReleases(true)
+	if err != nil {
+		return nil, err
+	}
+
+	exp, err := regexp.Compile(fmt.Sprintf(`%s(rc|beta).+`, v))
+	if err != nil {
+		return nil, err
+	}
+
+	var selected []version.Release
+	for _, release := range releases {
+		if !release.Stable && exp.MatchString(release.Version) {
+			selected = append(selected, release)
+		}
+	}
+
+	sort.Slice(selected, func(i, j int) bool {
+		return selected[i].Version > selected[j].Version
+	})
+
+	if len(selected) > 0 {
+		file := findFile(selected[0])
+		if file == nil {
+			return nil, fmt.Errorf("file not found: %s", v)
+		}
+
+		return file, nil
+	}
+
+	return nil, fmt.Errorf("version not found: %s", v)
+}
+
+func findFile(release version.Release) *version.File {
+	for _, file := range release.Files {
+		if file.OS == "linux" && file.Arch == "amd64" {
+			return &file
+		}
+	}
+
+	return nil
 }
