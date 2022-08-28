@@ -98,6 +98,7 @@ func (s *sem) getReleaseInfo(v string) (*version.File, error) {
 
 	info := s.findReleaseInfo(stableReleases, v)
 	if info == nil {
+		log.Printf("no stable release for %s, trying to find an unstable release", v)
 		info, err = findLatestUnstable(v)
 		if err != nil {
 			return nil, fmt.Errorf("unsupported version: %w", err)
