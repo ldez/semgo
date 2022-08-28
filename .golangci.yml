@@ -1,5 +1,5 @@
 run:
-  deadline: 2m
+  timeout: 2m
   skip-files:
     - ^unsecured/
 
@@ -8,8 +8,6 @@ linters-settings:
     enable-all: true
   gocyclo:
     min-complexity: 16
-  maligned:
-    suggest-new: true
   goconst:
     min-len: 3
     min-occurrences: 3
