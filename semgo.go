@@ -163,7 +163,7 @@ func (s *sem) getLocalVersions(dir string) (map[string]localInfo, error) {
 }
 
 func (s *sem) extract(dest string, stream io.Reader) error {
-	err := os.MkdirAll(dest, 0775)
+	err := os.MkdirAll(dest, 0o775)
 	if err != nil {
 		return err
 	}
@@ -193,7 +193,7 @@ func (s *sem) extract(dest string, stream io.Reader) error {
 
 		switch {
 		case mode.IsRegular():
-			if err := os.MkdirAll(filepath.Dir(abs), 0755); err != nil {
+			if err := os.MkdirAll(filepath.Dir(abs), 0o755); err != nil {
 				return err
 			}
 
@@ -216,7 +216,7 @@ func (s *sem) extract(dest string, stream io.Reader) error {
 			}
 
 		case mode.IsDir():
-			if err := os.Mkdir(abs, 0755); err != nil {
+			if err := os.Mkdir(abs, 0o755); err != nil {
 				return err
 			}
 		default:
@@ -254,7 +254,7 @@ func removeCurrent(locals map[string]localInfo, current *localInfo) (*localInfo,
 }
 
 func createSymlink(dest string, local *localInfo) error {
-	err := os.MkdirAll(dest, 0775)
+	err := os.MkdirAll(dest, 0o775)
 	if err != nil {
 		return err
 	}
