@@ -57,7 +57,6 @@ linters:
     - maligned # deprecated
     - nosnakecase # deprecated
     - scopelint # deprecated
-    - scopelint # deprecated
     - structcheck # deprecated
     - varcheck # deprecated
     - sqlclosecheck # not relevant (SQL)
